@@ -37,3 +37,4 @@ src/types/components.d.ts
 
 
 public/temp
+docs/.vitepress/cache/*
