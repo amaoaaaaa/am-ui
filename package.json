@@ -32,7 +32,7 @@
         "publish!:patch": "npm run build && npm version patch && npm run publish!",
         "publish!:minor": "npm run build && npm version minor && npm run publish!",
         "publish!:major": "npm run build && npm version major && npm run publish!",
-        "publish!": "npm publish --access public"
+        "publish!": "nrm use npm && npm publish --access public"
     },
     "peerDependencies": {
         "@vueuse/core": "^12.8.0",
@@ -61,3 +61,4 @@
     },
     "homepage": "https://github.com/amaoaaaaa/am-ui#readme"
 }
+
