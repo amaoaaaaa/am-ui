@@ -5,10 +5,13 @@
 ## 示例
 
 <script setup>
-import Pie3D from './components/DemoPie3D.vue'
+import { defineAsyncComponent } from 'vue'
+const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 </script>
 
-<Pie3D />
+<ClientOnly>
+    <Pie3D />
+</ClientOnly>
 
 ## Props
 

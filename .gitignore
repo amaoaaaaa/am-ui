@@ -29,6 +29,7 @@ node_modules
 .vite
 
 /dist
+/docs/.vitepress/dist
 dist.zip
 .history
 

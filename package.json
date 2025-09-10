@@ -29,7 +29,9 @@
     },
     "scripts": {
         "i": "npm install",
-        "dev:docs": "npx vitepress dev docs",
+        "docs:dev": "vitepress dev docs",
+        "docs:build": "vitepress build docs",
+        "docs:serve": "vitepress serve docs",
         "build": "vite build",
         "publish!:patch": "npm run build && npm version patch && npm run publish!",
         "publish!:minor": "npm run build && npm version minor && npm run publish!",
@@ -67,3 +69,4 @@
     },
     "homepage": "https://github.com/amaoaaaaa/am-ui#readme"
 }
+
