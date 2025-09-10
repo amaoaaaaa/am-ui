@@ -1,0 +1,40 @@
+name: Deploy VitePress Docs
+
+on:
+  push:
+    branches:
+      - main   # 当 main 分支有 push 时触发
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出仓库
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. 设置 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 构建 VitePress 文档
+      - name: Build Docs
+        run: npm run docs:build
+
+      # 5. 部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/.vitepress/dist
+          # 如果你的 GitHub Pages 目标是 /docs/ 子路径，配置如下：
+          # publish_branch: gh-pages
