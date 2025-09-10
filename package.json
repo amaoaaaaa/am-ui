@@ -1,6 +1,6 @@
 {
     "name": "@amaoaaaaa/am-ui",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Internal Vue 3 component library",
     "keywords": [
         "vue3",
@@ -61,4 +61,3 @@
     },
     "homepage": "https://github.com/amaoaaaaa/am-ui#readme"
 }
-
