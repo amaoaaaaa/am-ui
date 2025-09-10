@@ -1,4 +1,5 @@
 import type { App } from 'vue';
+import './index.css';
 
 // 单个组件导入
 import AmPie3D from './components/charts/pie-3d/index.vue';
