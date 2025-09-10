@@ -35,7 +35,7 @@
         "publish!": "npm publish --access public"
     },
     "peerDependencies": {
-        "@vueuse/core": "^13.9.0",
+        "@vueuse/core": "^12.8.0",
         "echarts": "^5.6.0",
         "echarts-gl": "^2.0.9",
         "gsap": "^3.12.7",
@@ -61,3 +61,4 @@
     },
     "homepage": "https://github.com/amaoaaaaa/am-ui#readme"
 }
+
