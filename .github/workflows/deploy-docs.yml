@@ -32,9 +32,7 @@ jobs:
 
       # 5. 部署到 GitHub Pages
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v6
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/.vitepress/dist
-          # 如果你的 GitHub Pages 目标是 /docs/ 子路径，配置如下：
-          # publish_branch: gh-pages
