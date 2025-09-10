@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-    title: 'am-ui 组件库',
-    description: 'Vue 3 组件库文档',
+    title: 'AM UI',
+    description: 'Vue 3 组件库',
     themeConfig: {
         nav: [
             { text: '首页', link: '/' },

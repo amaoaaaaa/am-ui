@@ -1,12 +1,12 @@
 <template>
     <div class="am-pie-3d relative">
         <!-- 3D 饼图 -->
-        <div ref="chartRef" class="h-full w-full bg-red-500/0"></div>
+        <div ref="chartRef" class="relative z-10 h-full w-full bg-red-500/0"></div>
 
         <!-- 底座背景 -->
         <img
             :src="baseImg"
-            class="base-img absolute left-1/2 transform -translate-x-1/2 -z-10 bottom-7 w-9/12"
+            class="base-img absolute left-1/2 transform -translate-x-1/2 z-0 bottom-7 w-9/12"
             alt=""
         />
     </div>
@@ -34,29 +34,49 @@ defineOptions({
 
 const props = withDefaults(
     defineProps<{
+        /**
+         * 数据
+         */
         data: SeriesData;
+
+        /**
+         * 配置项
+         */
         option?: EChartsOption & { grid3D?: Geo3D };
 
-        // /**
-        //  * 是否实心
-        //  * @default false
-        //  */
-        // solid?: boolean;
-
+        /**
+         * grid3D 的大小
+         * @default 140
+         */
         boxSize?: number;
+
+        /**
+         * 饼图数据项的最大高度
+         * @default 60
+         */
         maxHeight?: number;
 
-        valUnit?: string;
-
+        /**
+         * 饼图底座图片
+         */
         baseImg?: string;
 
+        /**
+         * label 的配置项。
+         * @description label 是用一个 2d 饼图系列实现的，所以配置项与 2d 饼图一致
+         */
         labelSeries?: PieSeriesOption;
+
+        /**
+         * 数值格式化函数
+         * @param params 参数
+         */
+        valueFormatter?: (params: { value: number; total: number; seriesIndex: number }) => string;
     }>(),
     {
         boxSize: 140,
         maxHeight: 60,
         option: undefined,
-        valUnit: '',
         baseImg: defaultBaseImg,
         labelSeries: undefined,
     }
@@ -68,6 +88,7 @@ const emit = defineEmits<{
 
 let _pieData: SeriesData = [];
 let _maxValue = 0;
+let _sumValue = 0;
 
 interface PieData extends SeriesDataItem {
     startRatio: number;
@@ -131,7 +152,16 @@ const { chartRef } = useChart({
             tooltip: {
                 formatter: (params) => {
                     const { seriesName, color, seriesIndex } = params as CallbackDataParams;
-                    const value = _pieData[seriesIndex!].value;
+                    const val = _pieData[seriesIndex!].value;
+
+                    const value = props.valueFormatter
+                        ? props.valueFormatter({
+                              value: Number(val as string | number),
+                              total: _sumValue,
+                              // @ts-expect-error
+                              seriesIndex: params.seriesIndex,
+                          })
+                        : val;
 
                     return `
                     <div style="display: flex; line-height: 1;">
@@ -144,9 +174,9 @@ const { chartRef } = useChart({
                             <span style="font-size: ${pxToRem('14px')};">${seriesName}</span>
                         </div>
 
-                        <span style="font-weight: bold; font-size: ${pxToRem('14px')};">${value}${
-                        props.valUnit
-                    }</span>
+                        <span style="font-weight: bold; font-size: ${pxToRem(
+                            '14px'
+                        )};">${value}</span>
                     </div>`;
                 },
                 confine: true,
@@ -219,6 +249,7 @@ const { chartRef } = useChart({
         const renderLoop = () => {
             // 如果需要更新图表
             if (needUpdate) {
+                // BUG 会导致正在显示的 tooltip 消失
                 chart.setOption({ series: originalSeries }, false, false);
                 needUpdate = false;
             }
@@ -356,6 +387,8 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
         series.push(seriesItem);
     }
 
+    _sumValue = sumValue;
+
     // 使用上一次遍历时，计算出的数据和 sumValue，调用 getParametricEquation 函数，
     // 向每个 series-surface 传入不同的参数方程 series-surface.parametricEquation，也就是实现每一个扇形。
     for (let i = 0; i < series.length; i++) {
@@ -413,8 +446,16 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
                     return '';
                 }
 
+                const value = props.valueFormatter
+                    ? props.valueFormatter({
+                          value: Number(params.value as string | number),
+                          total: _sumValue,
+                          seriesIndex: params.seriesIndex!,
+                      })
+                    : params.value;
+
                 // 不同 label 显示不同样式
-                return `${params.name}\n{${params.dataIndex}|${params.value}${props.valUnit}}`;
+                return `${params.name}\n{${params.dataIndex}|${value}}`;
             },
             rich: rich,
         },
