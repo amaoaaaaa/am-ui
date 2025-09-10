@@ -1,0 +1,48 @@
+{
+    "compilerOptions": {
+        // 指定编译目标，ESNext 会保留最新 JS 特性
+        "target": "ESNext",
+
+        // 指定模块系统，这里使用 ES 模块
+        "module": "ESNext",
+
+        // 模块解析方式，Node 风格，支持 node_modules 查找
+        "moduleResolution": "Node",
+
+        // 编译时包含的库，ESNext + DOM 用于浏览器环境和最新 JS 特性
+        "lib": ["ESNext", "DOM"],
+
+        // 生成 .d.ts 类型声明文件
+        "declaration": true,
+
+        // 类型声明文件输出目录
+        "declarationDir": "dist",
+
+        // 只输出类型声明文件，不输出 JS（如果需要生成 JS，设置为 false）
+        "emitDeclarationOnly": true,
+
+        // 开启严格模式（严格类型检查）
+        "strict": true,
+
+        // 保留 JSX（如果你的 Vue 项目用 TSX，可以保留 JSX）
+        "jsx": "preserve",
+
+        // 允许默认导入非 ES 模块（如 commonjs 模块）
+        "esModuleInterop": true,
+
+        // 跳过库文件类型检查，加快编译速度
+        "skipLibCheck": true,
+
+        // 强制文件名大小写一致（跨平台兼容）
+        "forceConsistentCasingInFileNames": true
+
+        // 👇 关键：让 tsc 支持 @ 别名
+        // "baseUrl": ".",
+        // "paths": {
+        //     "@/*": ["src/*"]
+        // }
+    },
+
+    // 指定编译包含的目录
+    "include": ["src"]
+}
