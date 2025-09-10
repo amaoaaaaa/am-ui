@@ -51,6 +51,7 @@
         "@vitejs/plugin-vue": "^5.0.5",
         "autoprefixer": "^10.4.21",
         "postcss": "^8.5.6",
+        "rollup-plugin-visualizer": "^6.0.3",
         "tailwindcss": "^3.4.6",
         "typescript": "^5.2.2",
         "vite": "^5.4.1",
@@ -66,4 +67,3 @@
     },
     "homepage": "https://github.com/amaoaaaaa/am-ui#readme"
 }
-

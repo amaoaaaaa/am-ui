@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import dts from 'vite-plugin-dts';
-import alias from '@rollup/plugin-alias';
-import { resolve } from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     plugins: [
@@ -13,13 +12,10 @@ export default defineConfig({
             include: ['src'],
             copyDtsFiles: true, // ✅ 确保 .d.ts 文件被复制
         }),
+
+        // 打包分析插件
+        visualizer({ open: true }),
     ],
-    resolve: {
-        // alias: [
-        //     // ✅ 正确：使用 __dirname + resolve 构造项目内的绝对路径
-        //     { find: '@', replacement: resolve(__dirname, 'src') },
-        // ],
-    },
     build: {
         sourcemap: true,
         lib: {
@@ -28,13 +24,6 @@ export default defineConfig({
             fileName: 'am-ui',
         },
         rollupOptions: {
-            plugins: [
-                // alias({
-                //     entries: [
-                //         { find: '@', replacement: resolve(__dirname, 'src') }, // 必须用绝对路径
-                //     ],
-                // }),
-            ],
             // 这些依赖不会打包进 dist
             external: [
                 'vue',

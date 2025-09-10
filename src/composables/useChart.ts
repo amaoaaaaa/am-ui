@@ -1,6 +1,6 @@
 import * as echarts from 'echarts';
-import { debounce, isFunction } from 'lodash';
-import { ComputedRef, onBeforeUnmount, onMounted, onUnmounted, Ref, ref, watch } from 'vue';
+import { debounce, isFunction } from 'lodash-es';
+import { ComputedRef, onUnmounted, Ref, ref, watch } from 'vue';
 import { setDefaultOption, setScaleToEchartsOptions } from '../utils/chart';
 import { useResizeObserver } from '@vueuse/core';
 
