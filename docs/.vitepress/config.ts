@@ -10,10 +10,18 @@ export default defineConfig({
         ],
         sidebar: [
             {
-                text: '图表',
+                text: 'Chart 图表',
                 items: [{ text: 'Pie3D 饼图3D', link: '/pie-3d' }],
             },
+            {
+                text: 'Data 数据展示',
+                items: [{ text: 'Table 表格', link: '/table' }],
+            },
         ],
+        outline: {
+            level: 'deep',
+            label: '本页目录',
+        },
     },
     base: '/am-ui/',
 });
