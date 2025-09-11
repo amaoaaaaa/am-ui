@@ -1,0 +1,1 @@
+import{A as o,T as t}from"./index.wUjvA_mA.js";import{d as s,b as r,o as l,w as i,G as n}from"./framework.CtXX_hb2.js";import"./index.DkV2LfKt.js";const d=s({__name:"TableVisibleRowsLimit",setup(p){return(c,m)=>(l(),r(t,null,{default:i(({cols:e,data:a})=>[n(o,{cols:e,data:a,"visible-rows":4},null,8,["cols","data"])]),_:1}))}});export{d as default};
