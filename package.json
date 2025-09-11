@@ -39,6 +39,7 @@
         "publish!": "npm publish --access public"
     },
     "peerDependencies": {
+        "@amaoaaaaa/v-text-ellipsis": "^0.2.1",
         "@vueuse/core": "^12.8.0",
         "echarts": "^5.6.0",
         "echarts-gl": "^2.0.9",

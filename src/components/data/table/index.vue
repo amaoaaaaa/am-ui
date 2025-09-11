@@ -101,6 +101,7 @@ import { isFunction, merge } from 'lodash-es';
 import { TableProps, TableColumn } from './types';
 import { computed, nextTick, StyleValue, useTemplateRef, watch } from 'vue';
 import { pxToRem } from '../../../utils';
+import { vTextEllipsis } from '@amaoaaaaa/v-text-ellipsis';
 
 const emits = defineEmits<{
     rowClick: [params: { row: T; rowIndex: number }];

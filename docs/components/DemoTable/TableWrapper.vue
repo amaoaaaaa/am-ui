@@ -34,11 +34,16 @@ const cols: TableColumn<Row>[] = [
     {
         label: '地址',
         prop: 'address',
+        truncate: true,
     },
 ];
 
 const data: Row[] = [
-    { date: '2025-09-10', name: '张伟', address: '北京市朝阳区建国路100号' },
+    {
+        date: '2025-09-10',
+        name: '张伟',
+        address: '北京市朝阳区建国路100号华贸中心A座12层1205室（近国贸CBD，邮编100022）',
+    },
     { date: '2025-09-09', name: '李娜', address: '上海市浦东新区世纪大道200号' },
     { date: '2025-09-08', name: '王强', address: '广州市天河区体育西路300号' },
     { date: '2025-09-07', name: '刘芳', address: '深圳市南山区科技园北区400号' },

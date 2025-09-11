@@ -16,7 +16,9 @@ const TableAutoScroll = defineAsyncComponent(() => import('./components/DemoTabl
 
 ### 基础用法
 
-只需要传 `cols` 和 `data` 属性
+只需要传 `cols` 和 `data` 属性。
+
+列配置里面开启 `truncate` 属性，即可使内容溢出省略（如第1行的地址）。
 
 <ClientOnly>
     <TableBaseUse />
