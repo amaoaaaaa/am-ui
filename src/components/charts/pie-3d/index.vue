@@ -22,7 +22,7 @@ import { SeriesData, SeriesDataItem } from '../../../types/echarts/shared';
 import { useChart } from '../../../composables/useChart';
 import { pxToRem } from '../../../utils';
 import type { Geo3D } from '../../../types/echarts/options/geo3D';
-import { setScaleToEchartsOptions } from '../../../utils/chart';
+import { getPageScale, setScaleToEchartsOptions } from '../../../utils/chart';
 import { PieDataItemOption } from 'echarts/types/src/chart/pie/PieSeries.js';
 import { Dictionary, TextCommonOption } from 'echarts/types/src/util/types.js';
 import defaultBaseImg from './images/bhth6.png';
@@ -322,9 +322,13 @@ const { chartRef } = useChart({
         // 保存快照
         originalSeries = series;
 
-        const options = setScaleToEchartsOptions({
-            series: series,
-        });
+        const options = setScaleToEchartsOptions(
+            {
+                series: series,
+            },
+            [],
+            ['pieData']
+        );
 
         chart.setOption(options);
     },
@@ -505,6 +509,8 @@ function getParametricEquation(
         scale?: number;
     }
 ) {
+    height = height * getPageScale();
+
     // 计算中间比例和对应的弧度值
     let midRatio = (startRatio + endRatio) / 2;
 

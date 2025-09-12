@@ -2,6 +2,16 @@ import { cloneDeep, difference, isArray, merge } from 'lodash-es';
 import { EChartsOption, LegendComponentOption } from 'echarts';
 import { XAXisOption, YAXisOption } from 'echarts/types/dist/shared';
 
+export const getPageScale = () => {
+    /** 设计稿高度 */
+    const DESIGN_HEIGHT = 1080;
+
+    /** 当前的缩放值 */
+    const scale = window.innerHeight / DESIGN_HEIGHT;
+
+    return scale;
+};
+
 /**
  * 根据页面和设计稿的缩放尺寸，对 ECharts 配置中的一些属性设置缩放（会改变传入的 echartsOptions 对象）
  *
@@ -38,10 +48,7 @@ export function setScaleToEchartsOptions(
     includesProps = [] as string[],
     excludesProps = [] as string[]
 ) {
-    /** 设计稿高度 */
-    const DESIGN_HEIGHT = 1080;
-    /** 当前的缩放值 */
-    const scale = window.innerHeight / DESIGN_HEIGHT;
+    const scale = getPageScale();
 
     const _includesProps = [
         ...new Set([
@@ -83,33 +90,36 @@ export function setScaleToEchartsOptions(
             // 遍历对象属性
             for (const key in obj) {
                 // 只处理本身的属性
-                if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                    // 处理需要设置缩放值的属性
-                    if (props.includes(key)) {
-                        const valueType = typeof obj[key];
+                if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
 
-                        if (valueType === 'number') {
-                            // 值是数字，直接乘以缩放值
-                            (obj[key] as number) *= scale;
-                        } else if (Array.isArray(obj[key])) {
-                            // 值是数组，遍历数组每个元素乘以缩放值
-                            (obj[key] as Array<number | string>) = (
-                                obj[key] as Array<number | string>
-                            ).map((val) => {
-                                return typeof val === 'number' ? val * scale : val;
-                            });
-                        }
+                // 跳过排除的属性
+                if (excludesProps.includes(key)) continue;
+
+                // 处理需要设置缩放值的属性
+                if (props.includes(key)) {
+                    const valueType = typeof obj[key];
+
+                    if (valueType === 'number') {
+                        // 值是数字，直接乘以缩放值
+                        (obj[key] as number) *= scale;
+                    } else if (Array.isArray(obj[key])) {
+                        // 值是数组，遍历数组每个元素乘以缩放值
+                        (obj[key] as Array<number | string>) = (
+                            obj[key] as Array<number | string>
+                        ).map((val) => {
+                            return typeof val === 'number' ? val * scale : val;
+                        });
                     }
-
-                    // 处理 tooltip 大小自适应
-                    if (key === 'tooltip') {
-                        obj[key].renderMode = 'html';
-                        obj[key].className = 'echarts-tooltip';
-                    }
-
-                    // 递归处理嵌套的对象
-                    setScale(obj[key]);
                 }
+
+                // 处理 tooltip 大小自适应
+                if (key === 'tooltip') {
+                    obj[key].renderMode = 'html';
+                    obj[key].className = 'echarts-tooltip';
+                }
+
+                // 递归处理嵌套的对象
+                setScale(obj[key]);
             }
         }
 
