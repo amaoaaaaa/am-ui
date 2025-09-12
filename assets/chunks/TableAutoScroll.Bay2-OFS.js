@@ -1,1 +1,0 @@
-import{A as o,T as t}from"./index.pM6WhMSm.js";import{d as r,b as l,o as s,w as c,G as n}from"./framework.B-QO48vr.js";import"./index.DPkDpuD5.js";const f=r({__name:"TableAutoScroll",setup(p){return(m,u)=>(s(),l(t,null,{default:c(({cols:a,data:e})=>[n(o,{cols:a,data:e,"visible-rows":4,"auto-scroll":""},null,8,["cols","data"])]),_:1}))}});export{f as default};

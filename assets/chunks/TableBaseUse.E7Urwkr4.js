@@ -1,0 +1,1 @@
+import{A as t,T as o}from"./index.Bz854LB9.js";import{d as r,b as s,o as l,w as p,G as n}from"./framework.CLsYUbul.js";import"./index.jX7dO_k-.js";import"./index.BTyz0UJP.js";const b=r({__name:"TableBaseUse",setup(c){return(m,_)=>(l(),s(o,null,{default:p(({cols:e,data:a})=>[n(t,{cols:e,data:a},null,8,["cols","data"])]),_:1}))}});export{b as default};
