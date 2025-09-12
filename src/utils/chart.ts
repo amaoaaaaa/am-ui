@@ -1,16 +1,8 @@
 import { cloneDeep, difference, isArray, merge } from 'lodash-es';
 import { EChartsOption, LegendComponentOption } from 'echarts';
 import { XAXisOption, YAXisOption } from 'echarts/types/dist/shared';
-
-export const getPageScale = () => {
-    /** 设计稿高度 */
-    const DESIGN_HEIGHT = 1080;
-
-    /** 当前的缩放值 */
-    const scale = window.innerHeight / DESIGN_HEIGHT;
-
-    return scale;
-};
+import { getPageScale } from '.';
+import { getGlobalConfig } from './config-store';
 
 /**
  * 根据页面和设计稿的缩放尺寸，对 ECharts 配置中的一些属性设置缩放（会改变传入的 echartsOptions 对象）
@@ -48,6 +40,11 @@ export function setScaleToEchartsOptions(
     includesProps = [] as string[],
     excludesProps = [] as string[]
 ) {
+    const globalConfig = getGlobalConfig();
+
+    // 禁用自动缩放，直接返回
+    if (!globalConfig.enablePageScale) return echartsOptions;
+
     const scale = getPageScale();
 
     const _includesProps = [

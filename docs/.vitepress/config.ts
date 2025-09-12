@@ -10,7 +10,11 @@ export default defineConfig({
         ],
         sidebar: [
             {
-                text: 'Chart 图表',
+                text: '配置组件',
+                items: [{ text: 'Config Provider 全局配置', link: '/config-provider' }],
+            },
+            {
+                text: 'Chart 图表组件',
                 items: [{ text: 'Pie3D 饼图3D', link: '/pie-3d' }],
             },
             {

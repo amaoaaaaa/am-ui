@@ -13,24 +13,30 @@
 </template>
 
 <script lang="ts" setup>
-import { toRef } from 'vue';
+import { inject, isReactive, toRef } from 'vue';
 import 'echarts-gl';
 import { cloneDeep, maxBy, merge, orderBy } from 'lodash-es';
 import { EChartsOption, PieSeriesOption } from 'echarts';
 import { CallbackDataParams } from 'echarts/types/dist/shared';
 import { SeriesData, SeriesDataItem } from '../../../types/echarts/shared';
 import { useChart } from '../../../composables/useChart';
-import { pxToRem } from '../../../utils';
+import { getPageScale, pxToRem } from '../../../utils';
 import type { Geo3D } from '../../../types/echarts/options/geo3D';
-import { getPageScale, setScaleToEchartsOptions } from '../../../utils/chart';
+import { setScaleToEchartsOptions } from '../../../utils/chart';
 import { PieDataItemOption } from 'echarts/types/src/chart/pie/PieSeries.js';
 import { Dictionary, TextCommonOption } from 'echarts/types/src/util/types.js';
 import defaultBaseImg from './images/bhth6.png';
 import gsap from 'gsap';
+import { AM_CONFIG_KEY } from '../../../utils/inject';
 
 defineOptions({
     name: 'am-pie-3d',
 });
+
+// const amConfig = inject(AM_CONFIG_KEY);
+
+// console.log('isReactive', isReactive(amConfig));
+// console.log('amConfig', amConfig);
 
 const props = withDefaults(
     defineProps<{

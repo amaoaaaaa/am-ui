@@ -1,3 +1,5 @@
+import { getGlobalConfig } from './config-store';
+
 /**
  * 将像素值转换为rem单位
  *
@@ -19,3 +21,20 @@ export function pxToRem(px: string | number) {
 
     return size + 'rem';
 }
+
+/**
+ * 获取页面缩放比例
+ *
+ * @returns 返回当前页面相对于设计稿高度的缩放比例
+ */
+export const getPageScale = () => {
+    const config = getGlobalConfig();
+
+    // 禁用页面缩放
+    if (!config.enablePageScale) return 1;
+
+    /** 当前的缩放值 */
+    const scale = window.innerHeight / config.designHeight!;
+
+    return scale;
+};

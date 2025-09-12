@@ -44,7 +44,7 @@ const TableAutoScroll = defineAsyncComponent(() => import('./components/DemoTabl
 
 | 名称 | 类型 | 默认值 | 描述 |
 |------|------|--------|------|
-| cols | `TableColumn<T>[]` | — | 列配置 |
+| cols | [`TableColumn<T>[]`](#tablecolumn) | — | 列配置 |
 | data | `T[]` | — | 表格数据 |
 | size | 'small' \| 'default' \| 'large' | — | 表格尺寸 |
 | showIndex | boolean | true | 是否使用序号列 |
@@ -62,7 +62,6 @@ const TableAutoScroll = defineAsyncComponent(() => import('./components/DemoTabl
 |----------|---------|------|
 | rowClick | `{ row: T; rowIndex: number }` | 行点击事件 |
 
-
 ## CSS 变量
 
 | 变量名 | 描述 |
@@ -74,3 +73,20 @@ const TableAutoScroll = defineAsyncComponent(() => import('./components/DemoTabl
 | --row-background-image | 行背景图片 |
 | --index-cell-width | 索引列宽度 |
 | --row-cell-padding | 单元格内边距 |
+
+## 类型
+
+### TableColumn
+
+`TableColumn<T>` 用于定义表格列的配置，其中 `T` 为表格每行数据的类型。
+
+| 属性        | 类型 | 默认值 | 描述 |
+|------------|------|--------|------|
+| label      | string | — | 列名 |
+| prop       | keyof T | — | 绑定字段，对应行数据 `T` 的属性 |
+| style      | `HTMLAttributes['style']` | — | 单元格自定义样式 |
+| cellClass  | string | — | 单元格 class |
+| truncate   | boolean | false | 是否开启文字溢出省略 |
+| align      | 'left' \| 'center' \| 'right' | 'center' | 内容对齐方式 |
+| width      | number \| string | — | 列宽 |
+| formatter  | (val: T[K], row: T) => string \| number \| undefined | — | 自定义格式化函数，val 为单元格值，row 为整行数据 |

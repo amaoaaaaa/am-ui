@@ -1,13 +1,17 @@
-# Pie3D
-
-饼图3D
-
-## 示例
-
 <script setup>
 import { defineAsyncComponent } from 'vue'
+
 const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 </script>
+
+
+
+
+# Pie3D 饼图3D
+
+使用 echarts-gl 绘制的3D饼图
+
+## 示例
 
 <ClientOnly>
     <Pie3D />

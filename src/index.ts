@@ -16,3 +16,5 @@ const install = (app: App) => {
 
 export const AmUI = { install };
 export { AmPie3D };
+
+export type { AmConfig } from './utils/config-store';
