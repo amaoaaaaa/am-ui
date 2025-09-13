@@ -1,5 +1,5 @@
 <template>
-    <div class="am-pie-3d relative">
+    <div class="am-pie-3d relative" @mousemove="handleMouseMove">
         <!-- 3D 饼图 -->
         <div ref="chartRef" class="relative z-10 h-full w-full bg-red-500/0"></div>
 
@@ -15,7 +15,7 @@
 <script lang="ts" setup>
 import { inject, isReactive, toRef } from 'vue';
 import 'echarts-gl';
-import { cloneDeep, maxBy, merge, orderBy } from 'lodash-es';
+import { cloneDeep, debounce, maxBy, merge, orderBy } from 'lodash-es';
 import { EChartsOption, PieSeriesOption } from 'echarts';
 import { CallbackDataParams } from 'echarts/types/dist/shared';
 import { SeriesData, SeriesDataItem } from '../../../types/echarts/shared';
@@ -127,6 +127,26 @@ let hoveredIndex: number | null = null;
  * 保存饼图扇形的缩放
  */
 let scales: { value: number; tween?: gsap.core.Tween }[] = [];
+
+/**
+ * 鼠标是否在饼图上
+ */
+let isHoveringPie = false;
+
+/**
+ * 饼图高亮（放大）效果恢复函数
+ */
+let resetPieHovering: (() => void) | undefined;
+
+const handleMouseMove = (e: MouseEvent) => {
+    const target = e.target as Element | null;
+    const cursor = target ? getComputedStyle(target).cursor : 'unknown';
+
+    // XXX 骚操作，用于判断鼠标是否在饼图上
+    isHoveringPie = cursor === 'pointer';
+
+    if (!isHoveringPie) resetPieHovering?.();
+};
 
 const { chartRef } = useChart({
     option: () => {
@@ -314,13 +334,12 @@ const { chartRef } = useChart({
             setScaleTween(params.seriesIndex);
         });
 
-        // 鼠标移出图表区域;
-        chart.on('globalout', () => {
+        resetPieHovering = () => {
             // 重置图表交互状态
             hoveredIndex = null;
             // 重置图表缩放 scale=1
             setScaleTween(-1);
-        });
+        };
     },
     onDataChange: (newData, chart) => {
         const series = getPie3D(newData, 1);
