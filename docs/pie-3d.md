@@ -1,5 +1,6 @@
 <script setup>
 import { defineAsyncComponent } from 'vue'
+import { ElTag } from 'element-plus'
 
 const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 </script>
@@ -34,3 +35,10 @@ const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 | 事件名称 | 参数 | 描述 |
 |----------|---------|------|
 | seriesClick | `{ seriesName: string }` | 点击某个系列时触发 |
+| select <el-tag size="small" round>0.4.0</el-tag> | `{ index: number \| null }` | 选中/取消某个系列时触发 |
+
+## Exposes
+
+| 名称 | 说明 | 类型 |
+|----------|---------|------|
+| setSelect <el-tag size="small" round>0.4.0</el-tag> | 设置选中的系列，传 `null` 则取消选中 | (seriesIndex: number \| null) => void |

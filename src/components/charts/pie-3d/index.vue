@@ -26,7 +26,6 @@ import { setScaleToEchartsOptions } from '../../../utils/chart';
 import { PieDataItemOption } from 'echarts/types/src/chart/pie/PieSeries.js';
 import { Dictionary, TextCommonOption } from 'echarts/types/src/util/types.js';
 import defaultBaseImg from './images/bhth6.png';
-import gsap from 'gsap';
 import { AM_CONFIG_KEY } from '../../../utils/inject';
 
 defineOptions({
@@ -90,7 +89,13 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     seriesClick: [{ seriesName: string }];
+    select: [{ index: number | null }];
 }>();
+
+/**
+ * 更新动画的时长
+ */
+const ANIMATION_DURATION_UPDATE = 200;
 
 let _pieData: SeriesData = [];
 let _maxValue = 0;
@@ -120,35 +125,7 @@ interface Series extends Omit<PieSeriesOption, 'type'> {
  */
 let originalSeries: Series[];
 
-// 监听鼠标事件，实现饼图选中效果（单选），近似实现高亮（放大）效果。
-let hoveredIndex: number | null = null;
-
-/**
- * 保存饼图扇形的缩放
- */
-let scales: { value: number; tween?: gsap.core.Tween }[] = [];
-
-/**
- * 鼠标是否在饼图上
- */
-let isHoveringPie = false;
-
-/**
- * 饼图高亮（放大）效果恢复函数
- */
-let resetPieHovering: (() => void) | undefined;
-
-const handleMouseMove = (e: MouseEvent) => {
-    const target = e.target as Element | null;
-    const cursor = target ? getComputedStyle(target).cursor : 'unknown';
-
-    // XXX 骚操作，用于判断鼠标是否在饼图上
-    isHoveringPie = cursor === 'pointer';
-
-    if (!isHoveringPie) resetPieHovering?.();
-};
-
-const { chartRef } = useChart({
+const { chartRef, chartInstance } = useChart({
     option: () => {
         const option: EChartsOption = {
             legend: {
@@ -246,12 +223,6 @@ const { chartRef } = useChart({
                     ambient: {
                         intensity: 0.4, // 环境光强度，数值越大越亮
                     },
-                    // ambientCubemap: {
-                    //     texture: 'xxx.hdr', // 支持加载环境贴图（需要 hdr/ktx 文件）
-                    //     exposure: 1,
-                    //     diffuseIntensity: 0.5,
-                    //     specularIntensity: 1,
-                    // },
                 },
             } as Geo3D,
         };
@@ -260,86 +231,33 @@ const { chartRef } = useChart({
     },
     dataRef: toRef(() => props.data),
     onInitialized(chart) {
-        chart.on('click', 'series', ({ seriesName }) => {
-            emit('seriesClick', { seriesName });
-        });
+        // 最底层的点击事件
+        chart.getZr().on('click', ({ target }) => {
+            // console.log('zr click');
 
-        /**
-         * 标识是否需要更新图表
-         */
-        let needUpdate = false;
+            if (!target && isHoveringPie && !mouseHasMoved) {
+                // 鼠标没动过，并且当前选中的是 null，说明还在上一次取消选中的地方，直接把他选中就行
+                // 否则说明已经有选中的，直接取消选中
+                const seriesIndex = selectedIndex === null ? beforeSelectedIndex : null;
 
-        /**
-         * 渲染循环函数
-         */
-        const renderLoop = () => {
-            // 如果需要更新图表
-            if (needUpdate) {
-                // BUG 会导致正在显示的 tooltip 消失
-                chart.setOption({ series: originalSeries }, false, false);
-                needUpdate = false;
+                debouncedSetSelect(seriesIndex, true);
             }
 
-            requestAnimationFrame(renderLoop);
-        };
-        requestAnimationFrame(renderLoop);
+            // 重新标记为鼠标没动过
+            mouseHasMoved = false;
+        });
+        // 再到饼图的点击事件
+        chart.on('click', 'series', ({ seriesIndex }) => {
+            // console.log('series click');
 
-        /**
-         * 设置缩放差值
-         * @param hoverIndex 要放大的系列索引，-1 表示全部恢复 scale=1
-         */
-        const setScaleTween = (hoverIndex: number) => {
-            scales.forEach((scale, index) => {
-                const currSeries = originalSeries[index];
+            debouncedSetSelect(seriesIndex, true);
 
-                if (!currSeries.pieStatus || !currSeries.pieData) return;
-
-                const { selected, hovered, k } = currSeries.pieStatus;
-                const { startRatio, endRatio, height } = currSeries.pieData;
-
-                const targetScale = index === hoverIndex ? 1.06 : 1;
-
-                // 设置差值
-                scale.tween?.kill();
-                scale.tween = gsap.to(scale, {
-                    value: targetScale,
-                    duration: 0.2,
-                    onUpdate: () => {
-                        currSeries.parametricEquation = getParametricEquation(
-                            startRatio,
-                            endRatio,
-                            selected,
-                            hovered,
-                            k,
-                            height,
-                            {
-                                scale: scale.value,
-                            }
-                        );
-
-                        // 标识需要更新，让 renderLoop 函数重新渲染图表
-                        needUpdate = true;
-                    },
-                });
-            });
-        };
-
-        // 鼠标经过扇形
-        chart.on('mouseover', function (params: { seriesIndex: number; seriesName: string }) {
-            // 避免重复触发
-            if (hoveredIndex === params.seriesIndex) return;
-            hoveredIndex = params.seriesIndex;
-
-            // 设置缩放缓动
-            setScaleTween(params.seriesIndex);
+            // 重新标记为鼠标没动过
+            mouseHasMoved = false;
         });
 
-        resetPieHovering = () => {
-            // 重置图表交互状态
-            hoveredIndex = null;
-            // 重置图表缩放 scale=1
-            setScaleTween(-1);
-        };
+        // 鼠标经过扇形
+        chart.on('mouseover', ({ seriesIndex }) => setHover(seriesIndex));
     },
     onDataChange: (newData, chart) => {
         const series = getPie3D(newData, 1);
@@ -359,6 +277,122 @@ const { chartRef } = useChart({
     },
 });
 
+let beforeSelectedIndex = -1;
+let selectedIndex: number | null = null;
+const _setSelect = (seriesIndex: number | null, emitSelect: boolean) => {
+    if (!chartInstance.value) return;
+
+    // 再点一次恢复
+    if (seriesIndex === selectedIndex) {
+        seriesIndex = null;
+    }
+
+    originalSeries.forEach((s, index) => {
+        const { pieData, pieStatus } = s;
+
+        if (!pieData || !pieStatus) return;
+
+        pieStatus.selected = index === seriesIndex;
+
+        if (index === selectedIndex) {
+            pieStatus.selected = false;
+        }
+
+        const { selected, hovered, k } = pieStatus;
+        const { startRatio, endRatio, height } = pieData;
+
+        s.parametricEquation = getParametricEquation(
+            startRatio,
+            endRatio,
+            selected,
+            hovered,
+            k,
+            height
+        );
+    });
+
+    chartInstance.value.setOption({ series: originalSeries });
+
+    selectedIndex = seriesIndex;
+
+    // console.log('selectedIndex', selectedIndex);
+    // console.log('---------------------------------');
+
+    if (emitSelect) {
+        const seriesName =
+            selectedIndex === null ? '' : (originalSeries[selectedIndex].name as string);
+        emit('seriesClick', { seriesName });
+
+        emit('select', { index: selectedIndex === null ? null : selectedIndex });
+    }
+};
+const setSelect = (seriesIndex: number | null) => _setSelect(seriesIndex, false);
+const debouncedSetSelect = debounce(_setSelect, 20);
+
+let hoveredIndex: number | null = null;
+const setHover = (seriesIndex: number | null) => {
+    if (!chartInstance.value) return;
+
+    // 已选中的不添加 hover 效果
+    // if (selectedIndex !== null && seriesIndex === selectedIndex) return;
+
+    // 避免重复触发
+    if (seriesIndex === hoveredIndex) return;
+
+    originalSeries.forEach((s, index) => {
+        const { pieData, pieStatus } = s;
+
+        if (!pieData || !pieStatus) return;
+
+        pieStatus.hovered = index === seriesIndex;
+
+        const { selected, hovered, k } = pieStatus;
+        const { startRatio, endRatio, height } = pieData;
+
+        s.parametricEquation = getParametricEquation(
+            startRatio,
+            endRatio,
+            selected,
+            hovered,
+            k,
+            height
+        );
+    });
+
+    chartInstance.value.setOption({ series: originalSeries });
+
+    hoveredIndex = seriesIndex;
+
+    // 只记录有效的系列索引
+    if (seriesIndex !== null) {
+        beforeSelectedIndex = seriesIndex;
+    }
+};
+
+/**
+ * 鼠标是否在饼图上
+ */
+let isHoveringPie = false;
+
+/**
+ * 记录上一次点击之后鼠标是否移动过
+ */
+let mouseHasMoved = true;
+
+const handleMouseMove = (e: MouseEvent) => {
+    mouseHasMoved = true;
+
+    const target = e.target as Element | null;
+    const cursor = target ? getComputedStyle(target).cursor : 'unknown';
+
+    // HACK 骚操作，用于判断鼠标是否在饼图上
+    isHoveringPie = cursor === 'pointer';
+
+    if (!isHoveringPie) {
+        setHover(null);
+    }
+};
+
 /**
  * 生成模拟 3D 饼图的配置项
  * @param pieData 饼图数据
@@ -371,10 +405,6 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
     let endValue = 0;
     // let legendData = [];
     // let linesSeries = []; // line3D模拟label指示线
-
-    // 重置动画
-    scales.forEach(({ tween }) => tween?.kill());
-    scales = Array.from({ length: pieData.length }, () => ({ value: 1 }));
 
     // 深拷贝防止修改原数据
     // 按大小排序，保证最小的数据项可以看到
@@ -391,6 +421,7 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
         sumValue += pieData[i].value;
 
         let seriesItem: Series = {
+            id: pieData[i].name,
             name: pieData[i].name,
             type: 'surface',
             parametric: true,
@@ -407,10 +438,8 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
             parametricEquation: undefined as undefined | any,
 
             // 关键是这些动画配置👇
-            // animation: true, // 开启动画
-            animation: false, // 关闭动画，用 gsap 实现更丝滑
-            // animationDuration: 3000, // 出场动画时长
-            // animationDurationUpdate: 200, // 更新动画时长
+            animation: true, // 开启动画
+            animationDurationUpdate: ANIMATION_DURATION_UPDATE, // 更新动画时长
         };
 
         series.push(seriesItem);
@@ -552,9 +581,9 @@ function getParametricEquation(
     k = typeof k !== 'undefined' ? k : 1 / 3;
 
     // 根据是否选中计算 X 和 Y 方向的偏移量
-    let offsetX = isSelected ? Math.cos(midRadian) * 0 : 0;
-    let offsetY = isSelected ? Math.sin(midRadian) * 0 : 0;
-    let offsetZ = isSelected ? 5 : 0;
+    let offsetX = isSelected ? Math.cos(midRadian) * 0.3 : 0;
+    let offsetY = isSelected ? Math.sin(midRadian) * 0.3 : 0;
+    let offsetZ = isSelected ? props.maxHeight / 2 : 0;
 
     // 根据是否悬停设置放大比例
     let hoverRate = options?.scale ?? (isHovered ? 1.05 : 1);
@@ -604,6 +633,10 @@ function getParametricEquation(
         },
     };
 }
+
+defineExpose({
+    setSelect,
+});
 </script>
 
 <style lang="scss" scoped></style>
