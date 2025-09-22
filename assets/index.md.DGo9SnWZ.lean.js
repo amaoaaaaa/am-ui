@@ -1,0 +1,1 @@
+import{_ as s,c as i,o as e,ae as t}from"./chunks/framework.CLsYUbul.js";const m=JSON.parse('{"title":"@amaoaaaaa/am-ui","description":"","frontmatter":{},"headers":[],"relativePath":"index.md","filePath":"index.md"}'),n={name:"index.md"};function l(o,a,p,h,r,d){return e(),i("div",null,[...a[0]||(a[0]=[t("",10)])])}const k=s(n,[["render",l]]);export{m as __pageData,k as default};
