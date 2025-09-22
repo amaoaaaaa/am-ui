@@ -2,6 +2,8 @@
 
 Vue 3 组件库
 
+[![npm](https://img.shields.io/npm/v/@amaoaaaaa/am-ui.svg)](https://www.npmjs.com/package/@amaoaaaaa/am-ui)
+
 ## 安装
 
 ```bash

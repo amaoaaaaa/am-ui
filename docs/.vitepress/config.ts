@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import pkg from '../../package.json';
 
 export default defineConfig({
     title: 'AM UI',
@@ -7,7 +8,9 @@ export default defineConfig({
         nav: [
             { text: '首页', link: '/' },
             { text: '组件', link: '/pie-3d' },
+            { text: `v${pkg.version}`, link: 'https://www.npmjs.com/package/@amaoaaaaa/am-ui' },
         ],
+        socialLinks: [{ icon: 'github', link: 'https://github.com/amaoaaaaa/am-ui' }],
         sidebar: [
             {
                 text: '配置组件',
