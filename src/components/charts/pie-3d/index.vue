@@ -77,6 +77,12 @@ const props = withDefaults(
          * @param params 参数
          */
         valueFormatter?: (params: { value: number; total: number; seriesIndex: number }) => string;
+
+        /**
+         * 禁用选中效果
+         * @default false
+         */
+        disabledSelect?: boolean;
     }>(),
     {
         boxSize: 140,
@@ -238,30 +244,32 @@ const { chartRef, chartInstance } = useChart({
     option: getOption,
     dataRef: toRef(() => props.data),
     onInitialized(chart) {
-        // 最底层的点击事件
-        chart.getZr().on('click', ({ target }) => {
-            // console.log('zr click');
+        if (!props.disabledSelect) {
+            // 最底层的点击事件
+            chart.getZr().on('click', ({ target }) => {
+                // console.log('zr click');
 
-            if (!target && isHoveringPie && !mouseHasMoved) {
-                // 鼠标没动过，并且当前选中的是 null，说明还在上一次取消选中的地方，直接把他选中就行
-                // 否则说明已经有选中的，直接取消选中
-                const seriesIndex = selectedIndex === null ? beforeSelectedIndex : null;
+                if (!target && isHoveringPie && !mouseHasMoved) {
+                    // 鼠标没动过，并且当前选中的是 null，说明还在上一次取消选中的地方，直接把他选中就行
+                    // 否则说明已经有选中的，直接取消选中
+                    const seriesIndex = selectedIndex === null ? beforeSelectedIndex : null;
+
+                    debouncedSetSelect(seriesIndex, true);
+                }
+
+                // 重新标记为鼠标没动过
+                mouseHasMoved = false;
+            });
+            // 再到饼图的点击事件
+            chart.on('click', 'series', ({ seriesIndex }) => {
+                // console.log('series click');
 
                 debouncedSetSelect(seriesIndex, true);
-            }
 
-            // 重新标记为鼠标没动过
-            mouseHasMoved = false;
-        });
-        // 再到饼图的点击事件
-        chart.on('click', 'series', ({ seriesIndex }) => {
-            // console.log('series click');
-
-            debouncedSetSelect(seriesIndex, true);
-
-            // 重新标记为鼠标没动过
-            mouseHasMoved = false;
-        });
+                // 重新标记为鼠标没动过
+                mouseHasMoved = false;
+            });
+        }
 
         // 鼠标经过扇形
         chart.on('mouseover', ({ seriesIndex }) => setHover(seriesIndex));
@@ -310,6 +318,9 @@ let beforeSelectedIndex = -1;
 let selectedIndex: number | null = null;
 const _setSelect = (seriesIndex: number | null, emitSelect: boolean) => {
     if (!chartInstance.value) return;
+
+    // 禁用选中效果
+    if (props.disabledSelect) return;
 
     // 再点一次恢复
     if (seriesIndex === selectedIndex) {

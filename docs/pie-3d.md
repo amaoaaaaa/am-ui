@@ -29,6 +29,7 @@ const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 | baseImg | string | `defaultBaseImg` | 饼图底座图片 |
 | labelSeries | `PieSeriesOption` | undefined | label 的配置项。label 是用一个 2d 饼图系列实现的，所以配置项与 2d 饼图一致 |
 | valueFormatter | `valueFormatter?: (params: { value: number; total: number; seriesIndex: number }) => string` | undefined | 数值格式化函数 |
+| disabledSelect <el-tag size="small" round>0.4.1</el-tag> | boolean | false | 禁用选中效果 |
 
 ## Events
 
