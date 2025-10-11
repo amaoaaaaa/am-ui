@@ -15,14 +15,14 @@
 <script lang="ts" setup>
 import { inject, isReactive, toRef } from 'vue';
 import 'echarts-gl';
-import { cloneDeep, debounce, maxBy, merge, orderBy } from 'lodash-es';
+import { cloneDeep, debounce, map, maxBy, merge, orderBy } from 'lodash-es';
 import { EChartsOption, PieSeriesOption } from 'echarts';
 import { CallbackDataParams } from 'echarts/types/dist/shared';
 import { SeriesData, SeriesDataItem } from '../../../types/echarts/shared';
 import { useChart } from '../../../composables/useChart';
 import { getPageScale, pxToRem } from '../../../utils';
 import type { Geo3D } from '../../../types/echarts/options/geo3D';
-import { setScaleToEchartsOptions } from '../../../utils/chart';
+import { setDefaultOption, setScaleToEchartsOptions } from '../../../utils/chart';
 import { PieDataItemOption } from 'echarts/types/src/chart/pie/PieSeries.js';
 import { Dictionary, TextCommonOption } from 'echarts/types/src/util/types.js';
 import defaultBaseImg from './images/bhth6.png';
@@ -125,55 +125,59 @@ interface Series extends Omit<PieSeriesOption, 'type'> {
  */
 let originalSeries: Series[];
 
-const { chartRef, chartInstance } = useChart({
-    option: () => {
-        const option: EChartsOption = {
-            legend: {
-                type: 'scroll',
-                data: props.data,
-                bottom: 0,
-                itemGap: 30,
-                itemHeight: 14,
-                itemWidth: 14,
-                textStyle: {
-                    color: '#fff',
-                    fontSize: 12,
-                },
-                pageIconColor: '#ddd',
-                pageIconSize: 14,
-                pageTextStyle: {
-                    color: '#ddd',
-                    fontSize: 14,
-                },
-                selectedMode: false, // ❌ 不允许图例点击
+/**
+ * 记录系列顺序
+ */
+let beforeOrder = '';
+
+const getOption = () => {
+    const option: EChartsOption = {
+        legend: {
+            type: 'scroll',
+            data: props.data,
+            bottom: 0,
+            itemGap: 30,
+            itemHeight: 14,
+            itemWidth: 14,
+            textStyle: {
+                color: '#fff',
+                fontSize: 12,
             },
-            animation: true,
-            // 设置初始动画时长（毫秒）
-            // animationDuration: 1000,
-            // 设置数据更新动画时长（毫秒）
-            // animationDurationUpdate: 3000,
-            tooltip: {
-                formatter: (params) => {
-                    const { seriesName, color, seriesIndex } = params as CallbackDataParams;
-                    const val = _pieData[seriesIndex!].value;
+            pageIconColor: '#ddd',
+            pageIconSize: 14,
+            pageTextStyle: {
+                color: '#ddd',
+                fontSize: 14,
+            },
+            selectedMode: false, // ❌ 不允许图例点击
+        },
+        animation: true,
+        // 设置初始动画时长（毫秒）
+        // animationDuration: 1000,
+        // 设置数据更新动画时长（毫秒）
+        // animationDurationUpdate: 3000,
+        tooltip: {
+            formatter: (params) => {
+                const { seriesName, color, seriesIndex } = params as CallbackDataParams;
+                const val = _pieData[seriesIndex!].value;
 
-                    const value = props.valueFormatter
-                        ? props.valueFormatter({
-                              value: Number(val as string | number),
-                              total: _sumValue,
-                              // @ts-expect-error
-                              seriesIndex: params.seriesIndex,
-                          })
-                        : val;
+                const value = props.valueFormatter
+                    ? props.valueFormatter({
+                          value: Number(val as string | number),
+                          total: _sumValue,
+                          // @ts-expect-error
+                          seriesIndex: params.seriesIndex,
+                      })
+                    : val;
 
-                    return `
+                return `
                     <div style="display: flex; line-height: 1;">
                         <div style="margin-right: ${pxToRem('20px')}">
                             <span style="display: inline-block; margin-right: ${pxToRem(
                                 '5px'
                             )};border-radius: ${pxToRem('10px')}; width: ${pxToRem(
-                        '10px'
-                    )}; height: ${pxToRem('10px')};background-color: ${color};"></span>
+                    '10px'
+                )}; height: ${pxToRem('10px')};background-color: ${color};"></span>
                             <span style="font-size: ${pxToRem('14px')};">${seriesName}</span>
                         </div>
 
@@ -181,54 +185,57 @@ const { chartRef, chartInstance } = useChart({
                             '14px'
                         )};">${value}</span>
                     </div>`;
+            },
+            confine: true,
+        },
+        xAxis3D: {
+            min: -1.5,
+            max: 1.5,
+        },
+        xAxis: { show: false },
+        yAxis3D: {
+            min: -1.5,
+            max: 1.5,
+        },
+        yAxis: { show: false },
+        zAxis3D: {
+            min: -1,
+            max: 1,
+        },
+        grid3D: {
+            show: false,
+            boxHeight: 1,
+            boxWidth: props.boxSize, // 调整 boxWidth 大小
+            boxDepth: props.boxSize, // 调整 boxDepth 大小
+            viewControl: {
+                projection: 'orthographic',
+                distance: 1000, // 调整视角距离
+                alpha: 24, // 绕 x 轴旋转的角度
+                beta: 45, // 旋转角度
+                // rotateSensitivity: [1, 0],
+                rotateSensitivity: 0,
+                zoomSensitivity: 0,
+                center: [0, 10, 0],
+            },
+            light: {
+                main: {
+                    intensity: 0.8, // 主光源强度
+                    // shadow: true, // 是否开启阴影
+                    alpha: 55, // 主光源的俯仰角
+                    beta: 55, // 主光源的方位角
                 },
-                confine: true,
-            },
-            xAxis3D: {
-                min: -1.5,
-                max: 1.5,
-            },
-            xAxis: { show: false },
-            yAxis3D: {
-                min: -1.5,
-                max: 1.5,
-            },
-            yAxis: { show: false },
-            zAxis3D: {
-                min: -1,
-                max: 1,
-            },
-            grid3D: {
-                show: false,
-                boxHeight: 1,
-                boxWidth: props.boxSize, // 调整 boxWidth 大小
-                boxDepth: props.boxSize, // 调整 boxDepth 大小
-                viewControl: {
-                    projection: 'orthographic',
-                    distance: 1000, // 调整视角距离
-                    alpha: 24, // 绕 x 轴旋转的角度
-                    beta: 45, // 旋转角度
-                    // rotateSensitivity: [1, 0],
-                    rotateSensitivity: 0,
-                    zoomSensitivity: 0,
-                    center: [0, 10, 0],
+                ambient: {
+                    intensity: 0.4, // 环境光强度，数值越大越亮
                 },
-                light: {
-                    main: {
-                        intensity: 0.8, // 主光源强度
-                        // shadow: true, // 是否开启阴影
-                        alpha: 55, // 主光源的俯仰角
-                        beta: 55, // 主光源的方位角
-                    },
-                    ambient: {
-                        intensity: 0.4, // 环境光强度，数值越大越亮
-                    },
-                },
-            } as Geo3D,
-        };
+            },
+        } as Geo3D,
+    };
 
-        return merge({}, option, props.option);
-    },
+    return merge({}, option, props.option);
+};
+
+const { chartRef, chartInstance } = useChart({
+    option: getOption,
     dataRef: toRef(() => props.data),
     onInitialized(chart) {
         // 最底层的点击事件
@@ -260,6 +267,28 @@ const { chartRef, chartInstance } = useChart({
         chart.on('mouseover', ({ seriesIndex }) => setHover(seriesIndex));
     },
     onDataChange: (newData, chart) => {
+        // ---------------- 处理数据系列顺序变化 ----------------
+
+        // 按数值大小排序
+        const newOrder = map(orderBy(cloneDeep(newData), 'value', 'desc'), 'name').toString();
+        // console.log('newOrder', newOrder);
+
+        // 排序变了
+        if (beforeOrder && newOrder !== beforeOrder) {
+            // 重置选中
+            // beforeSelectedIndex = -1;
+            // selectedIndex = null;
+
+            // 重置图表，才能更新 seriesIndex
+            chart.clear();
+            chart.setOption(setScaleToEchartsOptions(setDefaultOption(getOption())));
+        }
+
+        // 保存排序
+        beforeOrder = newOrder;
+
+        // ---------------- 更新 series ----------------
+
         const series = getPie3D(newData, 1);
 
         // 保存快照
@@ -408,7 +437,7 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
 
     // 深拷贝防止修改原数据
     // 按大小排序，保证最小的数据项可以看到
-    pieData = cloneDeep(orderBy(pieData, 'value', 'desc'));
+    pieData = orderBy(cloneDeep(pieData), 'value', 'desc');
     _pieData = pieData;
 
     const maxItem = maxBy(pieData, 'value');
