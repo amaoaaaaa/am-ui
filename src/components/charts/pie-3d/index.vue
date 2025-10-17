@@ -83,6 +83,17 @@ const props = withDefaults(
          * @default false
          */
         disabledSelect?: boolean;
+
+        /**
+         * 内环半径比例
+         *
+         * @description
+         * 可选值：0-1，0完全实心，1完全空心。
+         * ！！！！！注意：如果设置 innerRatio，即使 boxSize 不变饼图也会变小。
+         *
+         * @default undefined
+         */
+        innerRatio?: number;
     }>(),
     {
         boxSize: 140,
@@ -629,7 +640,7 @@ function getParametricEquation(
     let hoverRate = options?.scale ?? (isHovered ? 1.05 : 1);
 
     // 返回参数方程对象，包含 u、v 参数范围及 x、y、z 坐标计算方法
-    return {
+    const fns = {
         u: {
             min: -Math.PI,
             max: Math.PI * 3,
@@ -672,6 +683,28 @@ function getParametricEquation(
             return offsetZ + (Math.sin(v) > 0 ? 1 * height : -1);
         },
     };
+
+    // 处理配置内径大小的情况
+    if (props.innerRatio !== undefined) {
+        const R_outer = 1; // 外径固定
+        const innerRatio = props.innerRatio;
+
+        fns.x = function (u: number, v: number) {
+            const radius = R_outer * (innerRatio + ((1 - innerRatio) * (1 + Math.cos(v))) / 2);
+            if (u < startRadian) return offsetX + Math.cos(startRadian) * radius * hoverRate;
+            if (u > endRadian) return offsetX + Math.cos(endRadian) * radius * hoverRate;
+            return offsetX + Math.cos(u) * radius * hoverRate;
+        };
+
+        fns.y = function (u: number, v: number) {
+            const radius = R_outer * (innerRatio + ((1 - innerRatio) * (1 + Math.cos(v))) / 2);
+            if (u < startRadian) return offsetY + Math.sin(startRadian) * radius * hoverRate;
+            if (u > endRadian) return offsetY + Math.sin(endRadian) * radius * hoverRate;
+            return offsetY + Math.sin(u) * radius * hoverRate;
+        };
+    }
+
+    return fns;
 }
 
 defineExpose({

@@ -1,6 +1,6 @@
 <script setup>
 import { defineAsyncComponent } from 'vue'
-import { ElTag } from 'element-plus'
+import { ElTag, ElAlert } from 'element-plus'
 
 const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 </script>
@@ -30,6 +30,7 @@ const Pie3D = defineAsyncComponent(() => import('./components/DemoPie3D.vue'))
 | labelSeries | `PieSeriesOption` | undefined | label 的配置项。label 是用一个 2d 饼图系列实现的，所以配置项与 2d 饼图一致 |
 | valueFormatter | `valueFormatter?: (params: { value: number; total: number; seriesIndex: number }) => string` | undefined | 数值格式化函数 |
 | disabledSelect <el-tag size="small" round>0.4.1</el-tag> | boolean | false | 禁用选中效果 |
+| innerRatio <el-tag size="small" round>0.4.2</el-tag> | number | undefined | 内径比例。<br/><br/> 可选值：0-1，0完全实心，1完全空心。<br/><br/> <el-alert title="！！！！！注意：如果设置 innerRatio，即使 boxSize 不变饼图也会变小。" type="warning" :closable="false" /> |
 
 ## Events
 
