@@ -23,21 +23,21 @@ const data = [
         itemStyle: {
             color: '#00EAFF',
         },
-        value: 104,
+        value: 51,
     },
     {
         name: '点焊一',
         itemStyle: {
             color: '#1fb4ff',
         },
-        value: 68,
+        value: 39,
     },
     {
         name: '点焊二',
         itemStyle: {
             color: '#1AE496',
         },
-        value: 24,
+        value: 20,
     },
 ];
 </script>

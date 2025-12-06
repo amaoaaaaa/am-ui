@@ -530,6 +530,7 @@ function getPie3D(pieData: SeriesData, internalDiameterRatio = 1) {
             fontSize: 14,
             fontWeight: 'bold',
             color: (item.itemStyle?.color || '#fff') as string,
+            width: '100%',
         };
     });
 
